@@ -19,6 +19,27 @@ ZSH_THEME_GIT_PROMPT_SUFFIX="$YS_VCS_PROMPT_SUFFIX"
 ZSH_THEME_GIT_PROMPT_DIRTY="$YS_VCS_PROMPT_DIRTY"
 ZSH_THEME_GIT_PROMPT_CLEAN="$YS_VCS_PROMPT_CLEAN"
 
+# SSH agent info
+local ssh_agent_info='$(ys_ssh_agent_info)'
+ys_ssh_agent_info() {
+  IDS=$(ssh-add -l 2>/dev/null)
+  EXC=$?
+
+  # Handle no connection
+  if [ $EXC -eq 2 ]; then
+    echo -n "$fg[red]x$reset_color"
+
+  # Handle no identities
+  elif [ $EXC -eq 1 ]; then
+    echo -n "0"
+
+  # Display positive amount of identities
+  else
+   LINES=$(echo $IDS | wc -l)
+   echo -n "$fg[green]$LINES$reset_color"
+  fi
+}
+
 # HG info
 local hg_info='$(ys_hg_prompt_info)'
 ys_hg_prompt_info() {
@@ -49,6 +70,7 @@ local exit_code="%(?,,C:%{$fg[red]%}%?%{$reset_color%})"
 PROMPT="
 %{$terminfo[bold]$fg[blue]%}#%{$reset_color%} \
 %(#,%{$bg[yellow]%}%{$fg[black]%}%n%{$reset_color%},%{$fg[cyan]%}%n) \
+%{$fg[white]%}[${ssh_agent_info}] \
 %{$fg[white]%}@ \
 %{$fg[green]%}%m \
 %{$fg[white]%}in \
